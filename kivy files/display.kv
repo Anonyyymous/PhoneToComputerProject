@@ -1,0 +1,139 @@
+BoxLayout:
+    orientation: 'vertical'
+    BoxLayout:
+        id: bar
+        size_hint: 1, 0.1
+        orientation: 'horizontal'
+        Button:
+            text: 'swap mode'
+            on_press: app.swap_mode()
+        Button:
+            text: 'leave'
+            on_press: app.quit()
+
+    BoxLayout:
+
+        orientation: 'vertical'
+        id: phone
+        BoxLayout:
+            orientation: 'horizontal'
+            padding: 5,0,0,0
+            BoxLayout:
+                size_hint: 0.5, 1
+                canvas:
+                    # pos_hint: {"center_x":0.5,"center_y":0.5}
+                    Color:
+                        rgb: 0, 1, 1
+                InteractableImage:
+                    id: 'mouse_pad'
+                    source: 'kivy files/circle.png'
+            BoxLayout:
+                size_hint: 0.5, 1
+                orientation: 'vertical'
+                padding: 5,5
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint: 1, 0.25
+                    padding: 0, 1, 0, 1
+                    Button:
+                        text: 'disconnect/connect'
+                        on_press: app.toggle_connect()
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            id: 'mouse_movement_label'
+                            text: 'toggle mouse mode'
+                            # text_size: root.width, root.height
+                            shorten: True
+                        CheckBox:
+                            color:.294, .761, .623
+                            on_active: app.toggle_absolute_mouse_movement()
+                            size_hint: .2,1
+                Button:
+                    text: 'mouse 2'
+                    on_press: app.on_mouse_2()
+                Button:
+                    text: 'mouse 1'
+                    on_press: app.on_mouse_1()
+
+        BoxLayout:
+            BoxLayout:
+                orientation: 'vertical'
+                padding: 5,0,5,5
+                BoxLayout:
+                    size_hint: 1, 0.3
+                    Button:
+                        size_hint: 1, 1
+                        text: 'send'
+                        on_press: app.on_enter_pressed()
+                    CheckBox:
+                        color:.294, .761, .623
+                        on_active: app.checkbox_click()
+                        size_hint: .2,1
+                TextInput:
+                    id: input
+                    hint_text:'Your virtual keyboard is here...'
+                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                    size_hint: 1, 1
+                    on_text: app.on_text_changed()
+
+
+
+    BoxLayout:
+        id: pc
+        height: 0
+        size_hint_y: 0
+        opacity: 0
+        disabled: True
+        BoxLayout:
+            orientation: 'vertical'
+            BoxLayout:  # top
+                orientation: 'horizontal'
+                BoxLayout:
+                    orientation: 'vertical'
+                    BoxLayout:  # top left
+                        orientation: 'horizontal'
+                        Label:
+                            text: 'is active:'
+                        CheckBox:
+                            canvas.before:
+                                Color:
+                                    rgb: 1,1,1
+                                Rectangle:
+                                    pos:self.center_x-7, self.center_y-7
+                                    size:[14,14]
+                            id: is_active_checkbox
+                            on_active: app.toggle_activity()
+                            size_hint: .5,1
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            text: 'is connected:'
+                        CheckBox:
+                            canvas.before:
+                                Color:
+                                    rgb: 1,1,1
+                                Rectangle:
+                                    pos:self.center_x-7, self.center_y-7
+                                    size:[14,14]
+                            id: connected_checkbox
+                            # on_active: app.disconnect2(connected_checkbox.active)
+                            size_hint: .5,1
+                BoxLayout:  # top right
+                    orientation: 'vertical'
+                    Label:
+                        text: 'my code:'
+                    Label:
+                        id: code_display
+                        text: ''
+            BoxLayout:  # bottom
+                orientation: 'horizontal'
+                BoxLayout:  # bottom left
+                    orientation: 'vertical'
+                    Button:
+                        text: 'disconnect'
+                        on_press: app.disconnect()
+                BoxLayout:  # bottom right
+                    Button:
+                        text: 'toggle code'
+                        on_press: app.toggle_code()
