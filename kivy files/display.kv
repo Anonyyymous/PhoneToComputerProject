@@ -1,6 +1,6 @@
 BoxLayout:
     orientation: 'vertical'
-    BoxLayout:
+    BoxLayout:  # top bar, swap mode/leave button
         id: bar
         size_hint: 1, 0.1
         orientation: 'horizontal'
@@ -11,17 +11,17 @@ BoxLayout:
             text: 'leave'
             on_press: app.quit()
 
-    BoxLayout:
-
+    BoxLayout:  # phone layout
         orientation: 'vertical'
         id: phone
+
         BoxLayout:
             orientation: 'horizontal'
             padding: 5,0,0,0
+
             BoxLayout:
                 size_hint: 0.5, 1
                 canvas:
-                    # pos_hint: {"center_x":0.5,"center_y":0.5}
                     Color:
                         rgb: 0, 1, 1
                 InteractableImage:
@@ -31,11 +31,13 @@ BoxLayout:
                 size_hint: 0.5, 1
                 orientation: 'vertical'
                 padding: 5,5
+
                 BoxLayout:
                     orientation: 'horizontal'
                     size_hint: 1, 0.25
                     padding: 0, 1, 0, 1
                     Button:
+                        id: toggle_connection_btn
                         text: 'disconnect/connect'
                         on_press: app.toggle_connect()
                     BoxLayout:
@@ -47,19 +49,22 @@ BoxLayout:
                             shorten: True
                         CheckBox:
                             color:.294, .761, .623
-                            on_active: app.toggle_absolute_mouse_movement()
+                            # on_active: app.toggle_absolute_mouse_movement()
                             size_hint: .2,1
                 Button:
                     text: 'mouse 2'
-                    on_press: app.on_mouse_2()
+                    on_press: app.on_mouse_2(0)
+                    on_release: app.on_mouse_2(1)
                 Button:
                     text: 'mouse 1'
-                    on_press: app.on_mouse_1()
+                    on_press: app.on_mouse_1(0)
+                    on_release: app.on_mouse_1(1)
 
         BoxLayout:
             BoxLayout:
                 orientation: 'vertical'
                 padding: 5,0,5,5
+
                 BoxLayout:
                     size_hint: 1, 0.3
                     Button:
@@ -79,32 +84,27 @@ BoxLayout:
 
 
 
-    BoxLayout:
+    BoxLayout:  # pc loadout
         id: pc
         height: 0
         size_hint_y: 0
         opacity: 0
         disabled: True
+
         BoxLayout:
             orientation: 'vertical'
+
             BoxLayout:  # top
                 orientation: 'horizontal'
-                BoxLayout:
+                size_hint: 1, 1.5
+                BoxLayout:  # left
                     orientation: 'vertical'
-                    BoxLayout:  # top left
-                        orientation: 'horizontal'
-                        Label:
-                            text: 'is active:'
-                        CheckBox:
-                            canvas.before:
-                                Color:
-                                    rgb: 1,1,1
-                                Rectangle:
-                                    pos:self.center_x-7, self.center_y-7
-                                    size:[14,14]
-                            id: is_active_checkbox
-                            on_active: app.toggle_activity()
-                            size_hint: .5,1
+
+                    Button:
+                        id: toggle_server_connection_btn
+                        text: 'default'
+                        on_press: app.toggle_activity()
+
                     BoxLayout:
                         orientation: 'horizontal'
                         Label:
@@ -119,6 +119,7 @@ BoxLayout:
                             id: connected_checkbox
                             # on_active: app.disconnect2(connected_checkbox.active)
                             size_hint: .5,1
+
                 BoxLayout:  # top right
                     orientation: 'vertical'
                     Label:
@@ -126,13 +127,16 @@ BoxLayout:
                     Label:
                         id: code_display
                         text: ''
+
             BoxLayout:  # bottom
                 orientation: 'horizontal'
+
                 BoxLayout:  # bottom left
                     orientation: 'vertical'
                     Button:
                         text: 'disconnect'
                         on_press: app.disconnect()
+
                 BoxLayout:  # bottom right
                     Button:
                         text: 'toggle code'

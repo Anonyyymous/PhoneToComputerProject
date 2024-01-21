@@ -6,19 +6,9 @@ from KivyClasses import MyApp
 # import kivy
 
 # data = input()
-data = "1.53.254.74"  # "jjjk...hfahf123',"
-ip = get_ip()
-print(space_string(encrypt(ip)))
-
-'''mouse = main_mouse
-mouse.left_click()'''
-
-'''interpret_text("hello world")
-interpret_text("/*e")
-interpret_text("/*e*/")
-print("waiting")
-
-input("-")'''
+# data = "1.53.254.74"  # "jjjk...hfahf123',"
+# ip = get_ip()
+# print(space_string(encrypt(ip)))
 
 app = MyApp()
 app.run()

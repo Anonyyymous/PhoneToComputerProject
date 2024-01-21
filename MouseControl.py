@@ -26,18 +26,25 @@ speed = 1
 ticks_per_second = 1
 
 
+def click(mouse_btn, state):
+    if state == "1":
+        mouse.release(mouse_btn)
+    else:
+        mouse.click(mouse_btn)
+
+
 def mouse_click(text):  # text should be [1], [2], or [3]
     text.lower()
     print(len(text))
-    if len(text) != 3:
+    if len(text) != 4:
         print("mouse click input not valid")
         return
     elif text[1] == "1":
-        mouse.click('left')
+        click('left', text[2])
     elif text[1] == "2":
-        mouse.click('right')
+        click('right', text[2])
     elif text[1] == "3":
-        mouse.click('middle')
+        click('middle', text[2])
 
 
 def keyboard_input(text):
@@ -73,7 +80,7 @@ def empty(text):
 
 
 decimal_regex = "-?[0-9]+[.][0-9]+"
-regex_formats = ["^/.+/", f"^[(]{decimal_regex},{decimal_regex}[)]", "^[[][0-9][]]", "^."]
+regex_formats = ["^/.+/", f"^[(]{decimal_regex},{decimal_regex}[)]", "^[[][0-9][0-9][]]", "^."]
 functions = [keyboard_input, move_mouse, mouse_click, empty]
 # keys to be input, mouse input, mouse position
 

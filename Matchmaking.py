@@ -13,28 +13,34 @@ class Server:
         self.display_code = space_string(self.ip_encrypted)
         self.port = get_port()
         self.server_thread = None
-        self.server_stop_event = None
-        self.hosting = False
+        self.server_stop_event = threading.Event()
+        self.hosting_event = threading.Event()
         # self.our_mouse = Mouse(1)
 
     def host(self):
-        if self.hosting:
+        if self.is_hosting():
             return
         print("setting up server")
-        self.server_stop_event = threading.Event()
-        self.server_thread = threading.Thread(target=self.private_host).start()
+        self.server_stop_event.clear()
+        self.server_thread = threading.Thread(target=self.private_host).start()  # pribably dont need to save as a variable
+
+    def is_hosting(self):
+        return self.hosting_event.is_set()
 
     def close_connection(self):
-        if self.hosting:
+        if self.is_hosting():
             print("closing server")
             self.server_stop_event.set()
+            self.hosting_event.clear()
 
     def private_host(self):
         """
         setup server
         :return:
         """
+        self.hosting_event.set()
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(("", self.port + 2))
 
             s.listen()
@@ -46,6 +52,8 @@ class Server:
                     print(data)
                     interpret_text(data)
                     if not data or self.server_stop_event.is_set():
+                        
+                        s.shutdown()
                         break
                     conn.sendall(data)
 
@@ -57,7 +65,7 @@ class Client:
         self.port = get_port()
         self.connected = False
 
-    def connect(self, target_device, is_encrypted):
+    def connect(self, target_device, is_encrypted = False):
         """
         if the target device is encrypted, decrypt it then connect
         :param target_device:
@@ -65,9 +73,9 @@ class Client:
         :return:
         """
         if is_encrypted:
-            self.connect_logic(decrypt(target_device))
+            return self.connect_logic(decrypt(target_device))
         else:
-            self.connect_logic(target_device)
+            return self.connect_logic(target_device)
 
     def connect_logic(self, target_ip):
         """
@@ -75,15 +83,19 @@ class Client:
         :param target_ip:
         :return:
         """
-        target_ip = "" # "172.16.13.27"
-        print("trying to get connection to", target_ip)
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print("socket created")
-        self.sock.connect((target_ip, self.port))
-        print("socket connected")
-        self.sock.sendall(b"Hello, world")
-        self.connected = True
-        print("sample message sent")
+        try:
+            target_ip = "" # "172.16.13.27"
+            print("trying to get connection to", target_ip)
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            print("socket created")
+            self.sock.connect((target_ip, self.port))
+            print("socket connected")
+            self.sock.sendall(b"Hello, world")
+            self.connected = True
+            print("sample message sent")
+            return True
+        except:
+            return False
 
     def send(self, message):
         print("sending")

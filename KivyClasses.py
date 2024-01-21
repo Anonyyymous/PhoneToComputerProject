@@ -4,6 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.textinput import TextInput'''
 from kivy.uix.image import Image
+from kivy.uix.button import Button
 from kivy.app import App
 # from functools import partial
 # from Touching import *
@@ -14,6 +15,7 @@ import math
 import Matchmaking
 from MouseControl import *
 from Matchmaking import Client, Server
+import regex
 
 
 connected = False
@@ -93,6 +95,25 @@ class InteractableImage(Image):
         self.movement_mode *= -1
 
 
+class ToggleableButton(Button):
+    state = False
+    true_text = ""
+    false_text = ""
+    def __init__(self, *args, **kwargs):
+        super(InteractableImage, self).__init__(*args, **kwargs)
+
+    def setup(self, true_text, false_text):
+        self.true_text = true_text
+        self.false_text = false_text
+
+    def toggle(self):
+        self.state = not self.state
+        if self.state:
+            self.text = self.true_text
+        else:
+            self.text = self.false_text
+    
+
 class MyApp(App):  # see if you can add touch widget to kv file?
     # new_pos = Window.size
     # new_size = Window.size
@@ -108,6 +129,7 @@ class MyApp(App):  # see if you can add touch widget to kv file?
 
     def build(self):
         print()
+        # initialise toggleable button values
         return self.file
 
     def on_close(self):
@@ -128,57 +150,58 @@ class MyApp(App):  # see if you can add touch widget to kv file?
         self.send_sentence = not self.send_sentence
 
     def toggle_connect(self):
-        print("toggling connect state - is_connected =", not self.connected)
-        self.connected = not self.connected
-        if self.connected:
-            text = self.root.ids.input.text
+        btn = self.root.ids.toggle_connection_btn
+        if not client.connected:
+            target_ip = self.root.ids.input.text
+            three_numbers = "\d{0,3}"
+            ip_format = f"^{three_numbers}[.]{three_numbers}[.]{three_numbers}[.]{three_numbers}"
+            if bool(regex.match(ip_format, target_ip)) or target_ip == "":  # target_ip == "" means use local host
+                if client.connect(target_ip):
+                    btn.text = "connected"
+                else:
+                    btn.text = "couldnt find device with target ip"
+            else:
+                btn.text = "invalid ip format"
+        else:
+            client.close()
 
     def quit(self):
         self.on_close()
         self.root_window.close()
 
-    def on_mouse_1(self):
+    def on_mouse_1(self, value):
         print("mouse 1 pressed")
-        # self.mouse.left_click()
-        client.send("[1]")
+        client.send(f"[1{value}]")
 
-    def on_mouse_2(self):
+    def on_mouse_2(self, value):
         print("mouse 2 pressed")
-        # self.mouse.right_click()
-        client.send("[2]")
+        client.send(f"[2{value}]")
 
     def on_text_changed(self):
         if not self.send_sentence:
             self.on_enter_pressed()
-            print("sending individual characters")
-
-        '''text = self.root.ids.input.text
-        if text == "" or self.send_sentence:
-            return
-        print("sending individual character")
-        print("text changed/message sent to computer")
-        client.send(text)
-        self.root.ids.input.text = ""'''
 
     def on_enter_pressed(self):
         text = self.root.ids.input.text
-        if text == "":
+        if text == "" or not client.connected:
             return
         self.root.ids.input.text = ""
         client.send("/" + text + "/")
-        if self.connected:
-            print("sending data to computer")
-        else:
-            print("trying to find device with this key")
+        print("sending data to computer")
 
-    is_active = False
     code = "12345"
 
     def toggle_activity(self):
-        self.is_active = not self.is_active
-        if self.is_active:
+        btn = self.root.ids.toggle_server_connection_btn
+        
+        if not server.is_hosting():
             server.host()
-        print("starting to host")
+            print("starting to host")
+            btn.text = "looking for client"
+        else:
+            self.disconnect()
+            print("disconnecting")
+            btn.text = "stopped hosting"
 
     def toggle_code(self):
         code = self.root.ids.code_display.text
@@ -191,10 +214,10 @@ class MyApp(App):  # see if you can add touch widget to kv file?
         print("disconnecting")
         if host:
             server.close_connection()
+            self.root.ids.toggle_server_connection_btn.text = "stopped hosting"
         else:
             client.close()
         # online_object.hosting_thread.is_alive = False
 
-        self.root.ids.is_active_checkbox.active = False
         self.root.ids.connected_checkbox.active = False
         # online_object.searching = False
