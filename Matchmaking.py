@@ -15,6 +15,7 @@ class Server:
         self.server_thread = None
         self.server_stop_event = threading.Event()
         self.hosting_event = threading.Event()
+        self.is_connected = threading.Event()
         # self.our_mouse = Mouse(1)
 
     def host(self):
@@ -22,7 +23,10 @@ class Server:
             return
         print("setting up server")
         self.server_stop_event.clear()
-        self.server_thread = threading.Thread(target=self.private_host).start()  # pribably dont need to save as a variable
+        self.hosting_event.clear()
+        self.server_thread = threading.Thread(target=self.private_host)  # pribably dont need to save as a variable
+        self.server_thread.start()
+        self.is_connected.clear()
 
     def is_hosting(self):
         return self.hosting_event.is_set()
@@ -30,8 +34,24 @@ class Server:
     def close_connection(self):
         if self.is_hosting():
             print("closing server")
-            self.server_stop_event.set()
+            # self.server_stop_event.set()
             self.hosting_event.clear()
+
+            if not self.is_connected.is_set():
+                '''sock = socket.socket(socket.AF_INET, 
+                    socket.SOCK_STREAM)
+                print("created local socket")
+                sock.connect(("127.0.0.1", self.port + 2))
+                print("connected to server to shut it down")
+                sock.sendall(b"Hello, world")
+                print("hello world sent")'''
+                sock = create_client("127.0.0.1", self.port+2)
+                # sock.close()
+                sock.shutdown(socket.SHUT_RD)
+                print("socket closed")
+                self.is_connected.clear()
+
+            self.server_stop_event.set()
 
     def private_host(self):
         """
@@ -43,19 +63,25 @@ class Server:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(("", self.port + 2))
 
-            s.listen()
+            s.listen(2)
             conn, addr = s.accept()
+            self.is_connected.set()
             with conn:
                 print(f"Connected by {addr}")
                 while True:
-                    data = conn.recv(1024)
-                    print(data)
-                    interpret_text(data)
-                    if not data or self.server_stop_event.is_set():
-                        
-                        s.shutdown()
+                    try:
+                        data = conn.recv(1024)
+                        print(data)
+                        interpret_text(data)
+                        if not data or self.server_stop_event.is_set():
+                            print("closing thread")
+                            break
+                        conn.sendall(data)
+                    except:
+                        print("error occured")
                         break
-                    conn.sendall(data)
+            # s.shutdown(socket.SHUT_RD)
+        print("thread ended, hopefully")
 
 
 class Client:
@@ -84,17 +110,21 @@ class Client:
         :return:
         """
         try:
-            target_ip = "" # "172.16.13.27"
+            target_ip = "192.168.1.115" # "172.16.13.27"
             print("trying to get connection to", target_ip)
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            '''self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             print("socket created")
             self.sock.connect((target_ip, self.port))
             print("socket connected")
-            self.sock.sendall(b"Hello, world")
+            self.sock.sendall(b"Hello, world")'''
+            self.sock = create_client(target_ip, self.port)
             self.connected = True
             print("sample message sent")
             return True
-        except:
+        except Exception as e:
+            if self.sock != None:
+                self.sock.close()
+            print(e)
             return False
 
     def send(self, message):
@@ -115,6 +145,15 @@ class Client:
             return
         self.connected = False
         self.sock.close()
+
+
+def create_client(target_ip, port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print("socket created")
+    sock.connect((target_ip, port))
+    print("socket connected")
+    sock.sendall(b"Hello, world")
+    return sock
 
 
 def get_ip():
