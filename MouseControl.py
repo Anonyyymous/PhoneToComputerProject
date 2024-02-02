@@ -93,3 +93,9 @@ def interpret_text(inp):
             functions[i](text)
             break
 
+
+pairs = {"tab": lambda text: (text + "   "), "enter": lambda text: (text + "\n"), "backspace": lambda text: (text[0:-1]), "spacebar": lambda text: (text + " ")}  # unsightly, i know
+def parse_text_command(input_string, text):  # for the vkeyboard
+    if input_string.lower() in pairs.keys():
+        return pairs[input_string](text)
+    return text

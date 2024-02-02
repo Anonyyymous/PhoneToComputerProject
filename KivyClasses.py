@@ -5,6 +5,8 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.textinput import TextInput'''
 from kivy.uix.image import Image
 from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.vkeyboard import VKeyboard
 from kivy.app import App
 # from functools import partial
 # from Touching import *
@@ -14,7 +16,7 @@ import math
 
 import Matchmaking
 from MouseControl import *
-from Matchmaking import Client, Server
+from Matchmaking import Client, Server, get_name_ip_list
 import regex
 
 
@@ -40,6 +42,13 @@ def force_widget(wid, state):
         wid.height, wid.size_hint_y, wid.opacity, wid.disabled = 1, 1, 1, False
     else:
         wid.height, wid.size_hint_y, wid.opacity, wid.disabled = 0, None, 0, True
+
+
+class ButtonInt(Button):
+    num = 0
+    def __init__(self, start_value, *args, **kwargs):
+        super(ButtonInt, self).__init__(*args, **kwargs)
+        self.num = start_value
 
 
 class InteractableImage(Image):
@@ -95,30 +104,14 @@ class InteractableImage(Image):
         self.movement_mode *= -1
 
 
-class ToggleableButton(Button):
-    state = False
-    true_text = ""
-    false_text = ""
-    def __init__(self, *args, **kwargs):
-        super(InteractableImage, self).__init__(*args, **kwargs)
-
-    def setup(self, true_text, false_text):
-        self.true_text = true_text
-        self.false_text = false_text
-
-    def toggle(self):
-        self.state = not self.state
-        if self.state:
-            self.text = self.true_text
-        else:
-            self.text = self.false_text
-    
-
 class MyApp(App):  # see if you can add touch widget to kv file?
     # new_pos = Window.size
     # new_size = Window.size
     send_sentence = False
     connected = False
+    capslock = False
+    ips = {}
+    saved_device_name = ""
 
     def __init__(self, *args, **kwargs):
         super(MyApp, self).__init__(*args, **kwargs)
@@ -131,9 +124,15 @@ class MyApp(App):  # see if you can add touch widget to kv file?
         print()
         # initialise toggleable button values
         return self.file
+    
+    def on_start(self, **kwargs):
+        self.create_ip_dropdown_buttons()
 
     def on_close(self):
         server.close_connection()
+
+    def toggle_settings(self):
+        print("toggling settings")
 
     def swap_mode(self):
         global host
@@ -146,13 +145,19 @@ class MyApp(App):  # see if you can add touch widget to kv file?
             host = False
             print("on mobile mode")
 
-    def checkbox_click(self):
+    def toggle_sentence_send(self):
         self.send_sentence = not self.send_sentence
+        btn = self.root.ids.toggle_sentence_send_btn
+        if self.send_sentence:
+            btn.text = "toggle send sentence:\nSending when 'send' clicked"
+        else:
+            btn.text = "toggle send sentence:\nSending individual char"
 
     def toggle_connect(self):
         btn = self.root.ids.toggle_connection_btn
+        # self.root.ids.ip_dropdown.open()
         if not client.connected:
-            target_ip = self.root.ids.input.text
+            '''target_ip = self.root.ids.input.text
             three_numbers = "\d{0,3}"
             ip_format = f"^{three_numbers}[.]{three_numbers}[.]{three_numbers}[.]{three_numbers}"
             if bool(regex.match(ip_format, target_ip)) or target_ip == "":  # target_ip == "" means use local host
@@ -161,9 +166,54 @@ class MyApp(App):  # see if you can add touch widget to kv file?
                 else:
                     btn.text = "couldnt find device with target ip"
             else:
-                btn.text = "invalid ip format"
+                btn.text = "invalid ip format"'''
+            if client.connect(self.ips[self.saved_device_name]):
+                btn.text = 'connected'
+            else:
+                btn.text = 'couldnt find target ip'
         else:
             client.close()
+
+    def create_ip_dropdown_buttons(self):
+        names, ips = get_name_ip_list()
+        if len(names) == 0 or len(ips) == 0:
+            return
+        count = 0
+        parent = self.root.ids.ip_spinner
+        parent.values = names
+        parent.text = names[0]
+        self.saved_device_name = names[0]
+        while count < len(names) and count < len(ips):
+            '''main_btn = ButtonInt(count, text=names[count], height=66, size_hint_y=None)
+            main_btn.bind(on_press= lambda btn_self: self.select_target_ip(ips[btn_self.num]))
+            parent.add_widget(main_btn)
+            parent.values = names'''
+            self.ips[names[count]] = ips[count]
+
+            count += 1
+        self.stored_ip = ips[0]
+        # in settings
+        '''parent = self.root.ids.settings_ip_dropdown
+        count = 0
+        while count < len(names) and count < len(ips):
+            layout = BoxLayout(orientation='horizontal')
+            main_btn = ButtonInt(count, text=names[count], height=66, size_hint_y=None)
+            main_btn.bind(on_press= lambda btn_self: self.select_target_ip(ips[btn_self.num]))
+
+            del_btn = ButtonInt(count, text='x', on_press= lambda btn_self: self.delete_name_ip(ips[btn_self.num]))  # could be optimised to store this in a single BoxLayout class thing, but cba
+            
+            layout.add_widget(main_btn)
+            layout.add_widget(del_btn)
+            count += 1'''
+
+    def delete_name_ip(self, line_num):
+        print("deleting line", line_num)
+
+    def select_target_ip(self, new_target_device_name):  # could just do this in the lambda function
+        print("set target ip to", new_target_device_name)
+        self.saved_device_name = "" + new_target_device_name
+        if len(self.ips) > 0:  # this is called on start for some reasno
+            print(self.ips[self.saved_device_name])
 
     def quit(self):
         self.on_close()
@@ -178,6 +228,7 @@ class MyApp(App):  # see if you can add touch widget to kv file?
         client.send(f"[2{value}]")
 
     def on_text_changed(self):
+        print("e (188)")
         if not self.send_sentence:
             self.on_enter_pressed()
 
@@ -189,7 +240,22 @@ class MyApp(App):  # see if you can add touch widget to kv file?
         client.send("/" + text + "/")
         print("sending data to computer")
 
+    def vkeyboard_pressed(self, *args):
+        key = args[0][1]
+        print(key, "pressed")
+        if len(key) > 1:
+            if key.lower() == "capslock":
+                self.capslock = not self.capslock
+            self.root.ids.input.text = parse_text_command(key, self.root.ids.input.text)
+            return
+        if self.capslock:
+            key = key.upper()
+        self.root.ids.input.text += key
+
     code = "12345"
+
+    # def on_touch_down(self, touch):
+        # self.root.ids.ip_dropdown.open()
 
     def toggle_activity(self):
         btn = self.root.ids.toggle_server_connection_btn

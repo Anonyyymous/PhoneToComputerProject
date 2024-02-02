@@ -1,8 +1,18 @@
 '''
 current solution allows multiple port uses, but stops program from finishing after, possibl due to improper port disposal?
 
-display encrypted ip, and decrypt it on the client
+test across mltiplt devices
 
-factor time/day into the ip, maybe use datetime.month - constant
+so apparently vkeyboard doesnt let us switch screens...
+
+
+
+retrieve IP from json/text file, add these to a dropdown list on start. When pressed, autofill the ip into text input.
+
+make a mini window for saving/editing ips in this way
+
+test across 2 devices
+
+scrolling in the text box
 
 '''

@@ -110,7 +110,7 @@ class Client:
         :return:
         """
         try:
-            target_ip = "192.168.1.115" # "172.16.13.27"
+            # target_ip = "192.168.1.115" # "172.16.13.27"
             print("trying to get connection to", target_ip)
             '''self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             print("socket created")
@@ -170,3 +170,14 @@ def get_ip():
 def get_port():
     """gets the port to use"""
     return 8089  # replace with actual algorithm at some point
+
+
+def get_name_ip_list():
+    '''
+    returns name list, THEN IP list
+    '''
+    filename = "NamesAndIPs.txt"
+    dict = {}
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        return [line.split("|")[0] for line in lines], [line.split("|")[1].replace("\n", "") for line in lines]

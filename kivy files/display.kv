@@ -10,6 +10,10 @@ BoxLayout:
         Button:
             text: 'leave'
             on_press: app.quit()
+        Button:
+            text: 'settings'
+            size_hint: 0.2, 1
+            on_press: app.toggle_settings()
 
     BoxLayout:  # phone layout
         orientation: 'vertical'
@@ -34,23 +38,18 @@ BoxLayout:
 
                 BoxLayout:
                     orientation: 'horizontal'
-                    size_hint: 1, 0.25
+                    size_hint: 1, 0.5
                     padding: 0, 1, 0, 1
                     Button:
                         id: toggle_connection_btn
+                        size_hint: 0.5, 1
                         text: 'disconnect/connect'
                         on_press: app.toggle_connect()
-                    BoxLayout:
-                        orientation: 'horizontal'
-                        Label:
-                            id: 'mouse_movement_label'
-                            text: 'toggle mouse mode'
-                            # text_size: root.width, root.height
-                            shorten: True
-                        CheckBox:
-                            color:.294, .761, .623
-                            # on_active: app.toggle_absolute_mouse_movement()
-                            size_hint: .2,1
+                    Spinner:
+                        size_hint: None, None
+                        id: ip_spinner
+                        on_text: app.select_target_ip(self.text)
+                        
                 Button:
                     text: 'mouse 2'
                     on_press: app.on_mouse_2(0)
@@ -62,8 +61,10 @@ BoxLayout:
 
         BoxLayout:
             BoxLayout:
+                id: keyboard_parent # may not be needed
                 orientation: 'vertical'
                 padding: 5,0,5,5
+                size_hint: 1,1
 
                 BoxLayout:
                     size_hint: 1, 0.3
@@ -71,16 +72,20 @@ BoxLayout:
                         size_hint: 1, 1
                         text: 'send'
                         on_press: app.on_enter_pressed()
-                    CheckBox:
-                        color:.294, .761, .623
-                        on_active: app.checkbox_click()
-                        size_hint: .2,1
+                    Button:
+                        id: toggle_sentence_send_btn
+                        size_hint: 0.4, 1
+                        on_press: app.toggle_sentence_send()
                 TextInput:
                     id: input
                     hint_text:'Your virtual keyboard is here...'
                     pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-                    size_hint: 1, 1
+                    # size_hint: 1, .15
                     on_text: app.on_text_changed()
+                # VKeyboard:
+                    # id: vkeyboard
+                    # size_hint: 1, 1
+                    # on_key_up: app.vkeyboard_pressed(args)  # on_key_down doesnt work
 
 
 
@@ -141,3 +146,4 @@ BoxLayout:
                     Button:
                         text: 'toggle code'
                         on_press: app.toggle_code()
+
