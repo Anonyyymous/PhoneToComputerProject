@@ -77,8 +77,8 @@ class Server:
                             print("closing thread")
                             break
                         conn.sendall(data)
-                    except:
-                        print("error occured")
+                    except Exception as e:
+                        print("error occured;", e)
                         break
             # s.shutdown(socket.SHUT_RD)
         print("thread ended, hopefully")
@@ -117,7 +117,7 @@ class Client:
             self.sock.connect((target_ip, self.port))
             print("socket connected")
             self.sock.sendall(b"Hello, world")'''
-            self.sock = create_client(target_ip, self.port)
+            self.sock = create_client(target_ip, self.port+2)
             self.connected = True
             print("sample message sent")
             return True
@@ -169,7 +169,7 @@ def get_ip():
 
 def get_port():
     """gets the port to use"""
-    return 8089  # replace with actual algorithm at some point
+    return 9000  # replace with actual algorithm at some point
 
 
 def get_name_ip_list():

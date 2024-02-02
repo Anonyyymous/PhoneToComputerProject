@@ -80,7 +80,8 @@ def empty(text):
 
 
 decimal_regex = "-?[0-9]+[.][0-9]+"
-regex_formats = ["^/.+/", f"^[(]{decimal_regex},{decimal_regex}[)]", "^[[][0-9][0-9][]]", "^."]
+vector_format = f"^([(]{decimal_regex},{decimal_regex}[)])$" + r"{1}"
+regex_formats = ["^/.+/", vector_format, "^[[][0-9][0-9][]]", "^."]
 functions = [keyboard_input, move_mouse, mouse_click, empty]
 # keys to be input, mouse input, mouse position
 

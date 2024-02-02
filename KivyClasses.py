@@ -53,10 +53,8 @@ class ButtonInt(Button):
 
 class InteractableImage(Image):
     new_size = Window.size
-    movement_mode = 1  # 1 = absolute, -1 = relative
-    # if absolute, just use total pos, and reposition the smaller widget
-    # if relative, use dpos rather than pos, and uses relative movement
-    # I don't have to convert this to a vector to use it.
+    sensitivity = 1
+
 
     def __init__(self, *args, **kwargs):
         super(InteractableImage, self).__init__(*args, **kwargs)
@@ -78,19 +76,15 @@ class InteractableImage(Image):
         print(self.radius)
 
     def on_touch_move(self, touch):
-        if self.movement_mode == 1:
-            # print(touch.pos)
-            self.check_vector(touch.pos[0], touch.pos[1])
+        self.check_vector(touch.dpos[0], touch.dpos[1])
         self.check_window_size()
 
     def check_vector(self, x, y):
-        x = self.center[0] - x
-        y = self.center[1] - y
         magnitude = math.sqrt(x*x + y*y)
         if magnitude < self.radius * 0.75:
             print("valid movement,", x, y)
             # main_mouse.move_mouse(x, y)
-            client.send_vector(x, y)
+            client.send_vector(x * self.sensitivity, y * self.sensitivity)
             # convert to vector and send to brain
 
     def check_window_size(self):
@@ -99,9 +93,6 @@ class InteractableImage(Image):
             self.set_sizes()
         else:
             pass
-
-    def toggle_movement_mode(self):
-        self.movement_mode *= -1
 
 
 class MyApp(App):  # see if you can add touch widget to kv file?
