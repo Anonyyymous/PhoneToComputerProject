@@ -138,7 +138,10 @@ class Client:
             return
         msg = f"({x},{y})"
         print(f"sending {msg}")
-        self.sock.sendall(msg.encode('utf-8'))
+        try:
+            self.sock.sendall(msg.encode('utf-8'))
+        except:
+            self.connected = False
 
     def close(self):
         if not self.connected:

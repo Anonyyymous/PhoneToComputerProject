@@ -1,18 +1,15 @@
 '''
-current solution allows multiple port uses, but stops program from finishing after, possibl due to improper port disposal?
+test across mltiplt devices; works laptop->pc, but not pc-> laptop
 
-test across mltiplt devices
+add backspace for quick keyboard
 
-so apparently vkeyboard doesnt let us switch screens...
+scrollbar for mouse sensitivity
+checkbox for absolute vs relative movement
+
+add NamesAndIPs to gitignore
 
 
 
-retrieve IP from json/text file, add these to a dropdown list on start. When pressed, autofill the ip into text input.
-
-make a mini window for saving/editing ips in this way
-
-test across 2 devices
-
-scrolling in the text box
+add ip add/remove ui to pc view?
 
 '''

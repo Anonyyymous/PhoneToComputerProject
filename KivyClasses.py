@@ -54,7 +54,9 @@ class ButtonInt(Button):
 class InteractableImage(Image):
     new_size = Window.size
     sensitivity = 1
-
+    movement_mode = -1
+    # 1 = relative, so relative to last mouse position
+    # -1 = absolute, so from center of the widget
 
     def __init__(self, *args, **kwargs):
         super(InteractableImage, self).__init__(*args, **kwargs)
@@ -64,6 +66,8 @@ class InteractableImage(Image):
         self.width = 0
         self.set_sizes()
         # setup instance of image that we can grab and un-grab on touch down and up respectively
+        btn = Button(text='te')
+        self.add_widget(btn)
 
     def set_sizes(self):  # automatically adjust sizes
         self.default_window_size = Window.size
@@ -76,7 +80,11 @@ class InteractableImage(Image):
         print(self.radius)
 
     def on_touch_move(self, touch):
-        self.check_vector(touch.dpos[0], touch.dpos[1])
+        if self.movement_mode == 1:
+            self.check_vector(touch.dpos[0], touch.dpos[1])
+        else:
+            self.check_vector((touch.pos[0] - self.center_x) * self.sensitivity/10, 
+                              (touch.pos[1] - self.center_y) * self.sensitivity/10)
         self.check_window_size()
 
     def check_vector(self, x, y):
@@ -93,6 +101,9 @@ class InteractableImage(Image):
             self.set_sizes()
         else:
             pass
+
+    def toggle_movement_mode(self):
+        self.movement_mode *= -1
 
 
 class MyApp(App):  # see if you can add touch widget to kv file?
