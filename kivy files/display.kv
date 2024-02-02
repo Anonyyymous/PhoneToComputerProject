@@ -46,7 +46,7 @@ BoxLayout:
                         text: 'disconnect/connect'
                         on_press: app.toggle_connect()
                     Spinner:
-                        size_hint: None, None
+                        size_hint: None, 1
                         id: ip_spinner
                         on_text: app.select_target_ip(self.text)
                         

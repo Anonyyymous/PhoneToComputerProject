@@ -21,5 +21,3 @@ inp = ""
     inp = input("")
     vector = Vector(int(input("enter x")), int(input("enter y")))
     mouse.move_mouse(vector)'''
-
-
