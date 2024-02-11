@@ -16,13 +16,14 @@ import math
 
 import Matchmaking
 from MouseControl import *
-from Matchmaking import Client, Server, get_name_ip_list
+from Math import *
+from Matchmaking import Client, Server, get_name_ip_list, write_name_ip_lists
 import regex
 
 
 connected = False
 host = False
-# online_object = OnlineObject()
+sensitivity = 1
 client = Client()
 server = Server()
 # client.connect("172.16.0.232", True)
@@ -53,7 +54,6 @@ class ButtonInt(Button):
 
 class InteractableImage(Image):
     new_size = Window.size
-    sensitivity = 1
     movement_mode = -1
     # 1 = relative, so relative to last mouse position
     # -1 = absolute, so from center of the widget
@@ -83,8 +83,8 @@ class InteractableImage(Image):
         if self.movement_mode == 1:
             self.check_vector(touch.dpos[0], touch.dpos[1])
         else:
-            self.check_vector((touch.pos[0] - self.center_x) * self.sensitivity/10, 
-                              (touch.pos[1] - self.center_y) * self.sensitivity/10)
+            self.check_vector((touch.pos[0] - self.center_x) * sensitivity/10, 
+                              (touch.pos[1] - self.center_y) * sensitivity/10)
         self.check_window_size()
 
     def check_vector(self, x, y):
@@ -92,7 +92,7 @@ class InteractableImage(Image):
         if magnitude < self.radius * 0.75:
             print("valid movement,", x, y)
             # main_mouse.move_mouse(x, y)
-            client.send_vector(x * self.sensitivity, y * self.sensitivity)
+            client.send_vector(x * sensitivity, y * sensitivity)
             # convert to vector and send to brain
 
     def check_window_size(self):
@@ -112,14 +112,20 @@ class MyApp(App):  # see if you can add touch widget to kv file?
     send_sentence = False
     connected = False
     capslock = False
-    ips = {}
+    ips_dict = {}
     saved_device_name = ""
+    stored_ip = ""
+    names = []
+    ips = []
+    temp_bool = False
+    min_sens = 0.5
+    max_sens = 5
 
     def __init__(self, *args, **kwargs):
         super(MyApp, self).__init__(*args, **kwargs)
         # self.mouse = main_mouse
         self.file = Builder.load_file("kivy files/display.kv")
-
+        self.names, self.ips = get_name_ip_list()
         # self.online_object = OnlineObject()
 
     def build(self):
@@ -138,6 +144,7 @@ class MyApp(App):  # see if you can add touch widget to kv file?
 
     def swap_mode(self):
         global host
+        # self.names, self.ips = get_name_ip_list()
         toggle_widget(self.root.ids.pc)
         toggle_widget(self.root.ids.phone)
         if self.root.ids.phone.disabled:  # if phone is disabled, so we're on the pc mode
@@ -169,58 +176,83 @@ class MyApp(App):  # see if you can add touch widget to kv file?
                     btn.text = "couldnt find device with target ip"
             else:
                 btn.text = "invalid ip format"'''
-            if client.connect(self.ips[self.saved_device_name]):
+            if client.connect(self.stored_ip):
                 btn.text = 'connected'
             else:
                 btn.text = 'couldnt find target ip'
         else:
             client.close()
 
-    def create_ip_dropdown_buttons(self):
-        names, ips = get_name_ip_list()
-        if len(names) == 0 or len(ips) == 0:
+    def set_spinner_options(self, spinner, list):
+        spinner.values = list
+        self.temp_bool = True
+        spinner.text = list[0]
+        self.temp_bool = False
+
+    def create_ip_dropdown_buttons(self, is_different = False):
+        if len(self.names) == 0 or len(self.ips) == 0:
             return
-        count = 0
-        parent = self.root.ids.ip_spinner
-        parent.values = names
-        parent.text = names[0]
-        self.saved_device_name = names[0]
-        while count < len(names) and count < len(ips):
-            '''main_btn = ButtonInt(count, text=names[count], height=66, size_hint_y=None)
-            main_btn.bind(on_press= lambda btn_self: self.select_target_ip(ips[btn_self.num]))
-            parent.add_widget(main_btn)
-            parent.values = names'''
-            self.ips[names[count]] = ips[count]
+        self.set_spinner_options(self.root.ids.phone_ip_spinner, self.names)
+        self.set_spinner_options(self.root.ids.pc_ip_spinner, self.names)
+        self.stored_ip = self.ips[0]
 
-            count += 1
-        self.stored_ip = ips[0]
-        # in settings
-        '''parent = self.root.ids.settings_ip_dropdown
-        count = 0
-        while count < len(names) and count < len(ips):
-            layout = BoxLayout(orientation='horizontal')
-            main_btn = ButtonInt(count, text=names[count], height=66, size_hint_y=None)
-            main_btn.bind(on_press= lambda btn_self: self.select_target_ip(ips[btn_self.num]))
+        if is_different:
+            write_name_ip_lists(self.names, self.ips)
 
-            del_btn = ButtonInt(count, text='x', on_press= lambda btn_self: self.delete_name_ip(ips[btn_self.num]))  # could be optimised to store this in a single BoxLayout class thing, but cba
-            
-            layout.add_widget(main_btn)
-            layout.add_widget(del_btn)
-            count += 1'''
+    def check_ip_format(self, ip):
+        three_numbers = "\d{0,3}"
+        ip_format = f"^{three_numbers}[.]{three_numbers}[.]{three_numbers}[.]{three_numbers}"
+        if bool(regex.match(ip_format, ip)):
+            return True
+        else:
+            self.root.ids.pc_ip_add_ip.text += "\ninvalid ip format"
+            return False
+        
+    def make_new_ip(self):
+        print("making new ip")
+        name = self.root.ids.pc_ip_add_name.text
+        ip = self.root.ids.pc_ip_add_ip.text
 
-    def delete_name_ip(self, line_num):
-        print("deleting line", line_num)
+        # if name in self.names:
+            # return
+        if not self.check_ip_format(ip):
+            return
+
+        self.names.append(name)
+        self.ips.append(ip)
+
+        self.create_ip_dropdown_buttons(True)
+
+    def delete_name_ip(self, device_name):
+        print("deleting line", device_name)
+        if device_name in self.names:
+            index = self.names.index(device_name)
+            ip = self.ips[index]
+            self.names.remove(device_name)
+            self.ips.remove(ip)
 
     def select_target_ip(self, new_target_device_name):  # could just do this in the lambda function
-        print("set target ip to", new_target_device_name)
-        self.saved_device_name = "" + new_target_device_name
-        if len(self.ips) > 0:  # this is called on start for some reasno
-            print(self.ips[self.saved_device_name])
+        if self.temp_bool:
+            return
+        if not host:  # if on phone mode
+            if new_target_device_name in self.names:
+                index = self.names.index(new_target_device_name)
+                self.stored_ip = self.ips[index]
+                print("current ip =", self.stored_ip)
+        else:
+            print("select target ip")
+            self.delete_name_ip(new_target_device_name)
+            self.create_ip_dropdown_buttons(True)
 
     def quit(self):
         self.on_close()
         self.root_window.close()
 
+    def mouse_sensitivity_changed(self, slider):
+        # print(slider.value)
+        global sensitivity
+        sensitivity = lerp(self.min_sens, self.max_sens, slider.value)
+        
     def on_mouse_1(self, value):
         print("mouse 1 pressed")
         client.send(f"[1{value}]")
@@ -241,23 +273,6 @@ class MyApp(App):  # see if you can add touch widget to kv file?
         self.root.ids.input.text = ""
         client.send("/" + text + "/")
         print("sending data to computer")
-
-    def vkeyboard_pressed(self, *args):
-        key = args[0][1]
-        print(key, "pressed")
-        if len(key) > 1:
-            if key.lower() == "capslock":
-                self.capslock = not self.capslock
-            self.root.ids.input.text = parse_text_command(key, self.root.ids.input.text)
-            return
-        if self.capslock:
-            key = key.upper()
-        self.root.ids.input.text += key
-
-    code = "12345"
-
-    # def on_touch_down(self, touch):
-        # self.root.ids.ip_dropdown.open()
 
     def toggle_activity(self):
         btn = self.root.ids.toggle_server_connection_btn

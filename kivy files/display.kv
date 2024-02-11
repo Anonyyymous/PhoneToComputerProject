@@ -24,6 +24,7 @@ BoxLayout:
             padding: 5,0,0,0
 
             BoxLayout:
+                orientation: 'vertical'
                 size_hint: 0.5, 1
                 canvas:
                     Color:
@@ -31,6 +32,14 @@ BoxLayout:
                 InteractableImage:
                     id: 'mouse_pad'
                     source: 'kivy files/circle.png'
+                Slider:
+                    orientation: 'horizontal'
+                    size_hint: 1, 0.2
+                    min: 0
+                    max: 1
+                    value: 0
+                    on_touch_move: app.mouse_sensitivity_changed(self)
+
             BoxLayout:
                 size_hint: 0.5, 1
                 orientation: 'vertical'
@@ -47,7 +56,7 @@ BoxLayout:
                         on_press: app.toggle_connect()
                     Spinner:
                         size_hint: None, 1
-                        id: ip_spinner
+                        id: phone_ip_spinner
                         on_text: app.select_target_ip(self.text)
                         
                 Button:
@@ -82,10 +91,6 @@ BoxLayout:
                     pos_hint: {'center_x': 0.5, 'center_y': 0.5}
                     # size_hint: 1, .15
                     on_text: app.on_text_changed()
-                # VKeyboard:
-                    # id: vkeyboard
-                    # size_hint: 1, 1
-                    # on_key_up: app.vkeyboard_pressed(args)  # on_key_down doesnt work
 
 
 
@@ -128,13 +133,35 @@ BoxLayout:
                 BoxLayout:  # top right
                     orientation: 'vertical'
                     Label:
-                        text: 'my code:'
+                        text: 'my ip:'
+                        size_hint: 1, 0.2
                     Label:
                         id: code_display
                         text: ''
+                        size_hint: 1, 0.2
+                    BoxLayout:
+                        orientation: 'vertical'
+                        Spinner:
+                            size_hint: 1, 0.8
+                            id: pc_ip_spinner
+                            orientation: 'vertical'
+                            on_text: app.select_target_ip(self.text)
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint: 1, 0.4
+                            TextInput:
+                                id: pc_ip_add_name
+                                hint_text: 'device display name'
+                            TextInput:
+                                id: pc_ip_add_ip
+                                hint_text: 'device ip'
+                            Button:
+                                text: 'create ip profile'
+                                on_press: app.make_new_ip()
 
             BoxLayout:  # bottom
                 orientation: 'horizontal'
+                size_hint: 1, 0.2
 
                 BoxLayout:  # bottom left
                     orientation: 'vertical'
@@ -144,6 +171,6 @@ BoxLayout:
 
                 BoxLayout:  # bottom right
                     Button:
-                        text: 'toggle code'
+                        text: 'toggle ip'
                         on_press: app.toggle_code()
 

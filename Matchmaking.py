@@ -184,3 +184,14 @@ def get_name_ip_list():
     with open(filename, "r") as f:
         lines = f.readlines()
         return [line.split("|")[0] for line in lines], [line.split("|")[1].replace("\n", "") for line in lines]
+    
+
+def write_name_ip_lists(names, ips):
+    filename = "NamesAndIPs.txt"
+    with open(filename, "w") as f:
+        limit = min(len(names), len(ips))
+        for i in range(limit):
+            f.write(names[i] + "|" + ips[i])
+            if i < limit-1:
+                f.write("\n")
+    

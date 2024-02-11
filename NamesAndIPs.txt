@@ -1,3 +1,1 @@
-MainPC|192.168.1.167
-Laptop|192.168.1.115
-Test|ligma
+Empty| 

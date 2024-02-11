@@ -23,6 +23,8 @@ def vector_from_string(text):
 
 is_host = False
 speed = 1
+min_speed = 0.5
+max_speed = 5
 ticks_per_second = 1
 
 
@@ -95,8 +97,8 @@ def interpret_text(inp):
             break
 
 
-pairs = {"tab": lambda text: (text + "   "), "enter": lambda text: (text + "\n"), "backspace": lambda text: (text[0:-1]), "spacebar": lambda text: (text + " ")}  # unsightly, i know
+'''pairs = {"tab": lambda text: (text + "   "), "enter": lambda text: (text + "\n"), "backspace": lambda text: (text[0:-1]), "spacebar": lambda text: (text + " ")}  # unsightly, i know
 def parse_text_command(input_string, text):  # for the vkeyboard
     if input_string.lower() in pairs.keys():
         return pairs[input_string](text)
-    return text
+    return text'''
