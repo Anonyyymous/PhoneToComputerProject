@@ -132,19 +132,26 @@ BoxLayout:
 
                 BoxLayout:  # top right
                     orientation: 'vertical'
-                    Label:
-                        text: 'my ip:'
-                        size_hint: 1, 0.2
-                    Label:
-                        id: code_display
-                        text: ''
-                        size_hint: 1, 0.2
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint: 1, 0.3
+                        Button:
+                            text: 'toggle ip'
+                            on_press: app.toggle_code()
+                        Label:
+                            text: 'my ip:'
+                            size_hint: 1, 0.3
+                        Label:
+                            id: code_display
+                            text: ''
+                            size_hint: 1, 0.3
                     BoxLayout:
                         orientation: 'vertical'
                         Spinner:
                             size_hint: 1, 0.8
                             id: pc_ip_spinner
                             orientation: 'vertical'
+                            text: 'Create an IP profile'
                             on_text: app.select_target_ip(self.text)
                         BoxLayout:
                             orientation: 'horizontal'
@@ -168,9 +175,3 @@ BoxLayout:
                     Button:
                         text: 'disconnect'
                         on_press: app.disconnect()
-
-                BoxLayout:  # bottom right
-                    Button:
-                        text: 'toggle ip'
-                        on_press: app.toggle_code()
-
