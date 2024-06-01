@@ -13,8 +13,6 @@ else:
     with open("NamesAndIPs.txt", "w+") as f:
         f.write("Enter an IP address")
 
-input()
-
 
 class Server:
     def __init__(self):
