@@ -3,6 +3,17 @@ from Encryption import *
 import threading
 # from KivyClasses import MyApp
 from MouseControl import *
+import os
+
+
+if os.path.isfile("NamesAndIPs.txt"):
+    print("file exists")
+else:
+    print("NamesAndIPs doesnt exist")
+    with open("NamesAndIPs.txt", "w+") as f:
+        f.write("Enter an IP address")
+
+input()
 
 
 class Server:
